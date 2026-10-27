@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FIND YOUR PATH - اكتشف مسارك</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Cairo -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Cairo', 'sans-serif'],
+                    },
+                    colors: {
+                        deepBlack: '#050505',
+                        darkCharcoal: '#111111',
+                        luxGold: '#D9B56D',
+                        neonCyan: '#00FFFF',
+                        deepRed: '#C1121F',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Base & Scrollbar */
+        body {
+            background-color: #050505;
+            color: #ffffff;
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(217, 181, 109, 0.05), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(0, 255, 255, 0.05), transparent 25%);
+        }
+        
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #050505; }
+        ::-webkit-scrollbar-thumb { background: #D9B56D; border-radius: 10px; border: 2px solid #050505; }
+        ::-webkit-scrollbar-thumb:hover { background: #C1121F; }
+
+        /* Glassmorphism Classes */
+        .glass-panel {
+            background: rgba(15, 15, 15, 0.6);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(217, 181, 109, 0.15);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9), inset 0 0 30px rgba(217, 181, 109, 0.05);
+            border-radius: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-panel::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 50%; height: 100%;
+            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.05), transparent);
+            transform: skewX(-20deg);
+            animation: shine 8s infinite alternate;
+        }
+
+        .glass-card {
+            background: rgba(20, 20, 20, 0.7);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-card:hover {
+            background: rgba(217, 181, 109, 0.08);
+            border-color: rgba(217, 181, 109, 0.4);
+            transform: translateY(-5px) scale(1.01);
+            box-shadow: 0 15px 35px rgba(217, 181, 109, 0.15);
+        }
+
+        .glass-card.selected {
+            background: rgba(217, 181, 109, 0.15);
+            border-color: #D9B56D;
+            box-shadow: 0 0 25px rgba(217, 181, 109, 0.25) inset, 0 10px 30px rgba(217, 181, 109, 0.4);
+            transform: scale(1.03);
+        }
+
+        /* Footer */
+        .glass-footer {
+            background: rgba(5, 5, 5, 0.8);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(217, 181, 109, 0.2);
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.8);
+        }
+
+        /* Gradients & Text Glows */
+        .text-glow-gold { text-shadow: 0 0 25px rgba(217, 181, 109, 0.7); }
+        .text-glow-cyan { text-shadow: 0 0 25px rgba(0, 255, 255, 0.7); }
+        .text-glow-red { text-shadow: 0 0 25px rgba(193, 18, 31, 0.7); }
+
+        .bg-gradient-gold-red { background: linear-gradient(135deg, #D9B56D, #C1121F); }
+        
+        .text-gradient-gold {
+            background: linear-gradient(to right, #D9B56D, #FFEDBA, #D9B56D);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientText 4s linear infinite;
+        }
+
+        /* Ambient Orbs */
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(120px);
+            z-index: -1;
+            opacity: 0.25;
+            animation: floatOrb 15s infinite ease-in-out alternate;
+        }
+        .orb-1 { width: 400px; height: 400px; background: #C1121F; top: -100px; right: -150px; }
+        .orb-2 { width: 500px; height: 500px; background: #D9B56D; bottom: -200px; left: -100px; animation-delay: -5s; }
+        .orb-3 { width: 300px; height: 300px; background: #00FFFF; top: 30%; left: 60%; opacity: 0.15; animation-delay: -10s; }
+
+        /* Cinematic Animations */
+        @keyframes shine {
+            0% { left: -100%; }
+            20% { left: 200%; }
+            100% { left: 200%; }
+        }
+        
+        @keyframes gradientText {
+            0% { background-position: 0% center; }
+            100% { background-position: 200% center; }
+        }
+
+        @keyframes floatOrb {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(60px, -60px) scale(1.15); }
+            100% { transform: translate(-30px, 80px) scale(0.9); }
+        }
+
+        /* Pulse Effects */
+        .pulse-gold { animation: pulseGold 2s infinite cubic-bezier(0.4, 0, 0.2, 1); }
+        @keyframes pulseGold {
+            0% { box-shadow: 0 0 0 0 rgba(217, 181, 109, 0.8); }
+            70% { box-shadow: 0 0 0 20px rgba(217, 181, 109, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(217, 181, 109, 0); }
+        }
+        
+        .pulse-cyan { animation: pulseCyan 2s infinite cubic-bezier(0.4, 0, 0.2, 1); }
+        @keyframes pulseCyan {
+            0% { box-shadow: 0 0 0 0 rgba(0, 255, 255, 0.8); }
+            70% { box-shadow: 0 0 0 20px rgba(0, 255, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 255, 255, 0); }
+        }
+
+        /* Reveal & Transitions */
+        .reveal-up {
+            animation: revealUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+            transform: translateY(40px);
+        }
+        @keyframes revealUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .scene-transition {
+            transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .scene-out { opacity: 0; transform: scale(0.97) translateY(10px); }
+        .scene-in { opacity: 1; transform: scale(1) translateY(0); }
+
+        .delay-100 { animation-delay: 100ms; }
+        .delay-200 { animation-delay: 200ms; }
+        .delay-300 { animation-delay: 300ms; }
+        .delay-400 { animation-delay: 400ms; }
+
+        /* Cinematic Spinner */
+        .cinematic-spinner {
+            width: 100px;
+            height: 100px;
+            border: 3px solid rgba(217, 181, 109, 0.05);
+            border-top-color: #D9B56D;
+            border-bottom-color: #C1121F;
+            border-left-color: #00FFFF;
+            border-radius: 50%;
+            animation: spinFast 1.2s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+            box-shadow: 0 0 30px rgba(217, 181, 109, 0.3);
+        }
+        @keyframes spinFast { 100% { transform: rotate(360deg); } }
+
+        /* Floating Particles (CSS only) */
+        .particle {
+            position: absolute;
+            background: #D9B56D;
+            border-radius: 50%;
+            pointer-events: none;
+            opacity: 0;
+            animation: particleFloat 8s infinite linear;
+        }
+        @keyframes particleFloat {
+            0% { transform: translateY(0) scale(0); opacity: 0; }
+            20% { opacity: 0.8; transform: scale(1); }
+            80% { opacity: 0.5; }
+            100% { transform: translateY(-100px) scale(0); opacity: 0; }
+        }
+
+        /* Layout Structure */
+        #main-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+            position: relative;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-luxGold selection:text-black">
+
+    <!-- Ambient Background Effects -->
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    
+    <!-- Particles Engine (CSS based simulation) -->
+    <div id="particles-container" class="fixed inset-0 pointer-events-none z-0"></div>
+
+    <!-- Main Content Area -->
+    <div id="main-wrapper">
+        <div id="app-container" class="w-full max-w-4xl scene-transition scene-in">
+            <!-- Dynamic content injected here -->
+        </div>
+    </div>
+
+    <!-- Elegant Footer / Watermark -->
+    <footer class="glass-footer w-full py-5 px-4 text-center z-20 mt-auto">
+        <div class="container mx-auto flex justify-center items-center gap-2 text-sm md:text-base font-semibold text-gray-300 flex-col md:flex-row">
+            <div class="flex items-center gap-2">
+                <span>&copy; 2026 جميع الحقوق محفوظة</span>
+                <span class="text-neonCyan mx-2 hidden md:inline">|</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span>إعداد وتطوير</span>
+                <span class="text-luxGold font-bold text-glow-gold tracking-wide text-lg">م. يوسف كريم عابد (بويكا)</span>
+                <i class="fa-solid fa-crown text-luxGold ml-1 drop-shadow-[0_0_8px_rgba(217,181,109,0.8)]"></i>
+            </div>
+        </div>
+    </footer>
+
+    <!-- App Logic -->
+    <script>
+        // --- Generate Particles ---
+        function createParticles() {
+            const container = document.getElementById('particles-container');
+            for(let i = 0; i < 20; i++) {
+                let particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + 'vw';
+                particle.style.top = Math.random() * 100 + 'vh';
+                particle.style.width = Math.random() * 4 + 1 + 'px';
+                particle.style.height = particle.style.width;
+                particle.style.animationDelay = (Math.random() * 8) + 's';
+                particle.style.background = Math.random() > 0.5 ? '#D9B56D' : '#00FFFF';
+                container.appendChild(particle);
+            }
+        }
+        createParticles();
+
+        // --- Data ---
+        const questionsData = [
+            {
+                question: "إيه المجال اللي مهتم تتعلمه؟",
+                icon: "fa-compass",
+                options: [
+                    { id: 'web', text: "البرمجة وتطوير المواقع", icon: "fa-code" },
+                    { id: 'marketing', text: "التسويق الرقمي والإعلانات", icon: "fa-bullhorn" },
+                    { id: 'graphic', text: "الجرافيك ديزاين", icon: "fa-pen-nib" },
+                    { id: 'video', text: "المونتاج وصناعة المحتوى", icon: "fa-video" },
+                    { id: 'ai', text: "الذكاء الاصطناعي AI", icon: "fa-brain" },
+                    { id: 'english', text: "اللغة الإنجليزية وتطوير الذات", icon: "fa-language" },
+                    { id: 'undecided', text: "لسه مش عارف وعايز مساعدة", icon: "fa-question-circle" }
+                ]
+            },
+            {
+                question: "إيه مستواك الحالي؟",
+                icon: "fa-layer-group",
+                options: [
+                    { id: 'beginner', text: "مبتدئ تمامًا", icon: "fa-seedling" },
+                    { id: 'intermediate', text: "عندي معلومات بسيطة", icon: "fa-leaf" },
+                    { id: 'advanced', text: "عندي خبرة وعايز أطور نفسي", icon: "fa-tree" }
+                ]
+            },
+            {
+                question: "إيه هدفك من التعلم؟",
+                icon: "fa-bullseye",
+                options: [
+                    { id: 'cv', text: "تطوير مهاراتي وتقوية الـCV", icon: "fa-file-alt" },
+                    { id: 'projects', text: "تنفيذ مشروعات عملية", icon: "fa-laptop-code" },
+                    { id: 'job', text: "الاستعداد لسوق العمل", icon: "fa-briefcase" },
+                    { id: 'income', text: "زيادة الدخل وتطوير شغلي", icon: "fa-chart-line" }
+                ]
+            },
+            {
+                question: "تقدر تخصص وقت قد إيه يوميًا للتعلم؟",
+                icon: "fa-clock",
+                options: [
+                    { id: 'less_1', text: "أقل من ساعة", icon: "fa-hourglass-start" },
+                    { id: '1_to_2', text: "من ساعة إلى ساعتين", icon: "fa-hourglass-half" },
+                    { id: 'more_2', text: "أكثر من ساعتين", icon: "fa-hourglass-end" }
+                ]
+            },
+            {
+                question: "إيه الميزانية المناسبة ليك؟",
+                icon: "fa-wallet",
+                options: [
+                    { id: 'free', text: "بدور على مصادر مجانية", icon: "fa-gift" },
+                    { id: 'limited', text: "ميزانيتي محدودة", icon: "fa-coins" },
+                    { id: 'paid', text: "مستعد أدفع مقابل محتوى تدريبي", icon: "fa-credit-card" }
+                ]
+            }
+        ];
+
+        // --- State ---
+        let state = {
+            currentStep: 0,
+            answers: {},
+            whatsappStep: 1,
+        };
+
+        const appContainer = document.getElementById('app-container');
+
+        // --- Cinematic Transitions ---
+        function transitionTo(renderFunction) {
+            appContainer.classList.remove('scene-in');
+            appContainer.classList.add('scene-out');
+            
+            setTimeout(() => {
+                renderFunction();
+                appContainer.classList.remove('scene-out');
+                // Force reflow
+                void appContainer.offsetWidth;
+                appContainer.classList.add('scene-in');
+            }, 600); // matches CSS transition duration
+        }
+
+        // --- Screens ---
+
+        function renderHero() {
+            appContainer.innerHTML = `
+                <div class="glass-panel w-full p-10 md:p-20 text-center reveal-up">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-gold-red"></div>
+                    
+                    <h2 class="text-luxGold font-bold tracking-widest text-xs md:text-sm mb-6 uppercase reveal-up delay-100">
+                        <i class="fa-solid fa-film mr-2"></i> التجربة التفاعلية لاكتشاف الذات
+                    </h2>
+                    
+                    <h1 class="text-5xl md:text-7xl lg:text-8xl font-black mb-8 leading-tight reveal-up delay-200">
+                        FIND <br class="md:hidden"/> <span class="text-gradient-gold text-glow-gold">YOUR PATH</span>
+                    </h1>
+                    
+                    <h3 class="text-2xl md:text-3xl font-bold mb-6 text-white reveal-up delay-300 drop-shadow-lg">
+                        مش عارف تبدأ منين؟ إحنا هنساعدك.
+                    </h3>
+                    
+                    <p class="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto mb-12 leading-relaxed reveal-up delay-400">
+                        رحلة سينمائية قصيرة من 5 أسئلة، تحلل اهتماماتك وتصمم لك خريطة طريق مخصصة لتبدأ رحلتك المهنية باحترافية.
+                    </p>
+                    
+                    <div class="flex justify-center reveal-up delay-[500ms]">
+                        <button onclick="transitionTo(renderQuiz)" class="bg-gradient-gold-red pulse-gold hover:opacity-90 text-white font-black py-4 px-12 rounded-xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 flex items-center justify-center gap-4 text-xl md:text-2xl border border-luxGold/50 shadow-[0_10px_20px_rgba(193,18,31,0.3)]">
+                            <span>ابدأ مسارك الآن</span>
+                            <i class="fa-solid fa-arrow-left"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderQuiz() {
+            const qData = questionsData[state.currentStep];
+            const progressPercentage = ((state.currentStep) / questionsData.length) * 100;
+            const hasAnswered = state.answers[state.currentStep] !== undefined;
+
+            let optionsHtml = qData.options.map((opt, index) => {
+                const isSelected = state.answers[state.currentStep] === opt.id;
+                const animDelay = `animation-delay: ${index * 100}ms`;
+                return `
+                    <div onclick="selectOption('${opt.id}')" style="${animDelay}" class="glass-card reveal-up p-5 md:p-6 rounded-2xl flex items-center gap-4 ${isSelected ? 'selected' : ''}">
+                        <div class="w-14 h-14 rounded-full bg-darkCharcoal flex items-center justify-center border ${isSelected ? 'border-luxGold shadow-[0_0_15px_rgba(217,181,109,0.5)]' : 'border-white/10'} transition-all duration-300">
+                            <i class="fa-solid ${opt.icon} text-2xl ${isSelected ? 'text-luxGold' : 'text-gray-400'}"></i>
+                        </div>
+                        <span class="text-lg md:text-xl font-bold flex-grow ${isSelected ? 'text-white' : 'text-gray-300'}">${opt.text}</span>
+                        ${isSelected ? '<i class="fa-solid fa-circle-check text-luxGold text-2xl drop-shadow-[0_0_10px_rgba(217,181,109,1)]"></i>' : ''}
+                    </div>
+                `;
+            }).join('');
+
+            appContainer.innerHTML = `
+                <div class="w-full">
+                    <!-- Progress Bar -->
+                    <div class="mb-10 flex items-center gap-4 reveal-up">
+                        <div class="w-full bg-darkCharcoal rounded-full h-3 overflow-hidden border border-white/5 shadow-inner">
+                            <div class="bg-gradient-gold-red h-full rounded-full transition-all duration-1000 ease-in-out shadow-[0_0_15px_rgba(217,181,109,0.8)] relative" style="width: ${progressPercentage}%">
+                                <div class="absolute inset-0 bg-white/20 w-full animate-pulse"></div>
+                            </div>
+                        </div>
+                        <span class="text-luxGold font-bold whitespace-nowrap text-sm tracking-widest bg-darkCharcoal px-4 py-1 rounded-full border border-luxGold/30">خطوة ${state.currentStep + 1} / ${questionsData.length}</span>
+                    </div>
+
+                    <div class="glass-panel p-8 md:p-14">
+                        <div class="mb-12 flex items-center gap-5 reveal-up delay-100">
+                            <div class="p-4 bg-neonCyan/10 rounded-2xl border border-neonCyan/30 text-glow-cyan shadow-[0_0_20px_rgba(0,255,255,0.2)]">
+                                <i class="fa-solid ${qData.icon} text-4xl text-neonCyan"></i>
+                            </div>
+                            <h2 class="text-3xl md:text-4xl font-black leading-tight text-white drop-shadow-md">${qData.question}</h2>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-12">
+                            ${optionsHtml}
+                        </div>
+
+                        <!-- Navigation -->
+                        <div class="flex justify-between items-center mt-10 pt-8 border-t border-white/10 reveal-up delay-[${qData.options.length * 100 + 100}ms]">
+                            <button onclick="transitionTo(prevQuestion)" class="px-6 py-3 rounded-xl font-bold transition-all flex items-center gap-3 text-lg ${state.currentStep === 0 ? 'invisible' : 'text-gray-400 hover:text-white hover:bg-white/10'}">
+                                <i class="fa-solid fa-arrow-right"></i> رجوع
+                            </button>
+                            
+                            <button onclick="handleNext()" class="${hasAnswered ? 'bg-gradient-gold-red hover:brightness-110 text-white pulse-gold shadow-[0_5px_15px_rgba(193,18,31,0.4)]' : 'bg-darkCharcoal text-gray-600 cursor-not-allowed border border-white/5'} px-10 py-4 rounded-xl font-black transition-all duration-300 transform ${hasAnswered ? 'hover:scale-105' : ''} flex items-center gap-3 text-lg md:text-xl" ${!hasAnswered ? 'disabled' : ''}>
+                                ${state.currentStep === questionsData.length - 1 ? 'إنشاء خطتي <i class="fa-solid fa-wand-magic-sparkles"></i>' : 'التالي <i class="fa-solid fa-arrow-left"></i>'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderLoading() {
+            appContainer.innerHTML = `
+                <div class="glass-panel p-16 md:p-24 flex flex-col items-center justify-center min-h-[500px]">
+                    <div class="cinematic-spinner mb-12"></div>
+                    <h2 id="loading-text" class="text-4xl md:text-5xl font-black text-gradient-gold text-glow-gold tracking-wider transition-opacity duration-500 text-center">بنحلل اهتماماتك...</h2>
+                    <div class="w-64 h-1 bg-darkCharcoal rounded-full mt-10 overflow-hidden">
+                        <div class="h-full bg-neonCyan w-1/3 animate-[slideRight_2s_ease-in-out_infinite_alternate] shadow-[0_0_10px_rgba(0,255,255,0.8)]"></div>
+                    </div>
+                </div>
+                <style>
+                    @keyframes slideRight {
+                        0% { transform: translateX(-200%); }
+                        100% { transform: translateX(200%); }
+                    }
+                </style>
+            `;
+
+            const texts = [
+                "بنحلل اهتماماتك...",
+                "بنحدد مستوى خبرتك...",
+                "بنبني خارطة الطريق...",
+                "بنجهز خطتك النهائية..."
+            ];
+            
+            const textElement = document.getElementById('loading-text');
+            let textIndex = 0;
+
+            const interval = setInterval(() => {
+                textIndex++;
+                if (textIndex < texts.length) {
+                    textElement.style.opacity = 0;
+                    setTimeout(() => {
+                        textElement.innerText = texts[textIndex];
+                        textElement.style.opacity = 1;
+                    }, 500);
+                } else {
+                    clearInterval(interval);
+                    setTimeout(() => transitionTo(renderResult), 1000);
+                }
+            }, 1800);
+        }
+
+        function renderResult() {
+            // Format Data for WhatsApp
+            const getAnswerText = (qIndex) => {
+                const ansId = state.answers[qIndex];
+                return questionsData[qIndex].options.find(o => o.id === ansId)?.text || "غير محدد";
+            };
+
+            const waMessage = `*طلب تحليل مسار - FIND YOUR PATH* 🚀\n\n` +
+                              `إليك بياناتي واختياراتي:\n\n` +
+                              `🎯 *المجال:* ${getAnswerText(0)}\n` +
+                              `📈 *المستوى:* ${getAnswerText(1)}\n` +
+                              `🏆 *الهدف:* ${getAnswerText(2)}\n` +
+                              `⏱️ *الوقت المتاح:* ${getAnswerText(3)}\n` +
+                              `💰 *الميزانية:* ${getAnswerText(4)}\n\n` +
+                              `برجاء إرسال الخطة والتفاصيل.`;
+
+            const encodedMessage = encodeURIComponent(waMessage);
+            const waNumber1 = "201131134244";
+            const waNumber2 = "201003439385";
+            
+            window.waLink1 = `https://wa.me/${waNumber1}?text=${encodedMessage}`;
+            window.waLink2 = `https://wa.me/${waNumber2}?text=${encodedMessage}`;
+            state.whatsappStep = 1;
+
+            appContainer.innerHTML = `
+                <div class="glass-panel p-12 md:p-20 text-center relative border-luxGold/40 shadow-[0_30px_60px_rgba(0,0,0,1)]">
+                    <div class="absolute top-0 left-0 w-full h-2 bg-gradient-gold-red"></div>
+                    
+                    <div class="w-32 h-32 bg-darkCharcoal rounded-full flex items-center justify-center mx-auto mb-10 shadow-[0_0_50px_rgba(217,181,109,0.3)] border-2 border-luxGold/60 reveal-up">
+                        <i class="fa-solid fa-shield-check text-luxGold text-6xl text-glow-gold"></i>
+                    </div>
+                    
+                    <h2 class="text-5xl md:text-6xl font-black mb-8 text-gradient-gold text-glow-gold tracking-wide reveal-up delay-100">تم تجهيز خطتك بنجاح!</h2>
+                    
+                    <p class="text-gray-300 text-xl leading-loose mb-12 max-w-2xl mx-auto reveal-up delay-200">
+                        لقد قمنا بتحليل اختياراتك بدقة ووضعنا المسار الأمثل لك للبدء فوراً. 
+                        <br><br>
+                        <span class="inline-block px-4 py-2 bg-neonCyan/10 border border-neonCyan/30 rounded-lg text-neonCyan font-bold text-glow-cyan">
+                            <i class="fa-solid fa-lock text-sm mr-2"></i> لاستلام النتيجة، يرجى التواصل مع مستشارينا عبر الزر أدناه.
+                        </span>
+                    </p>
+                    
+                    <div class="reveal-up delay-300 max-w-md mx-auto">
+                        <button id="smart-whatsapp-btn" onclick="handleSmartWhatsApp()" class="w-full bg-luxGold hover:bg-[#c4a15b] text-black font-black py-6 px-8 rounded-2xl transition-all duration-500 transform hover:scale-105 pulse-gold flex items-center justify-center gap-4 text-2xl border-2 border-luxGold shadow-[0_10px_30px_rgba(217,181,109,0.4)] relative overflow-hidden group">
+                            <div class="absolute inset-0 bg-white/20 w-full translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-in-out"></div>
+                            <i id="btn-icon" class="fa-brands fa-whatsapp text-4xl"></i>
+                            <span id="btn-text">استلم نتيجتك الآن</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- Interaction Logic ---
+        function selectOption(optionId) {
+            state.answers[state.currentStep] = optionId;
+            renderQuiz(); 
+        }
+
+        function handleNext() {
+            if (state.currentStep < questionsData.length - 1) {
+                state.currentStep++;
+                transitionTo(renderQuiz);
+            } else {
+                transitionTo(renderLoading);
+            }
+        }
+
+        function prevQuestion() {
+            if (state.currentStep > 0) {
+                state.currentStep--;
+                renderQuiz(); // No cinematic transition for backwards to feel faster
+            }
+        }
+
+        function handleSmartWhatsApp() {
+            const btn = document.getElementById('smart-whatsapp-btn');
+            const btnText = document.getElementById('btn-text');
+            const btnIcon = document.getElementById('btn-icon');
+
+            if (state.whatsappStep === 1) {
+                // Open first link
+                window.open(window.waLink1, '_blank');
+                state.whatsappStep = 2;
+                
+                // Transform button to Cyan style
+                btn.className = "w-full bg-transparent border-2 border-neonCyan text-neonCyan font-black py-6 px-8 rounded-2xl transition-all duration-500 transform hover:scale-105 pulse-cyan flex items-center justify-center gap-4 text-2xl shadow-[0_0_30px_rgba(0,255,255,0.2)] hover:bg-neonCyan/10 group overflow-hidden relative";
+                
+                btnText.innerText = "تأكيد الإرسال للرقم البديل";
+                btnIcon.className = "fa-solid fa-paper-plane text-3xl";
+                
+            } else if (state.whatsappStep === 2) {
+                // Open second link
+                window.open(window.waLink2, '_blank');
+                state.whatsappStep = 3;
+                
+                // Transform button to Disabled/Completed style
+                btn.className = "w-full bg-darkCharcoal border border-white/10 text-gray-500 font-black py-6 px-8 rounded-2xl transition-all duration-500 flex items-center justify-center gap-4 text-2xl cursor-not-allowed";
+                btn.disabled = true;
+                
+                btnText.innerText = "تم الإرسال بنجاح";
+                btnIcon.className = "fa-solid fa-circle-check text-3xl text-green-500 drop-shadow-[0_0_10px_rgba(34,197,94,0.5)]";
+            }
+        }
+
+        // --- Init ---
+        window.onload = () => {
+            renderHero();
+        };
+    </script>
+</body>
+</html>
